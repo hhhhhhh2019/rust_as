@@ -1,3 +1,8 @@
+use crate::expr::ExprKind;
+
+use super::expr::Expr;
+
+
 pub fn opcode(s: &str) -> u8 {
 	match s {
 		"sto"    => 0x0,
@@ -74,5 +79,56 @@ pub fn datatype(s: &str) -> u8 {
 		"di" => 4,
 		"dl" => 8,
 		_    => unreachable!(),
+	}
+}
+
+
+pub fn get_size(e: &Expr) -> u64 {
+	match &e.kind {
+		ExprKind::Instruction(op, _, _) => {
+			match op {
+				0  => 4 * 3,
+				1  => 4 * 3,
+				2  => 4 * 1,
+				3  => 4 * 1,
+				4  => 4 * 1,
+				5  => 4 * 1,
+				6  => 4 * 3,
+				7  => 4 * 3,
+				8  => 4 * 3,
+				9  => 4 * 3,
+				10 => 4 * 3,
+				11 => 4 * 3,
+				12 => 4 * 3,
+				13 => 4 * 1,
+				14 => 4 * 1,
+				15 => 4 * 1,
+				16 => 4 * 1,
+				17 => 4 * 1,
+				18 => 4 * 1,
+				19 => 4 * 3,
+				20 => 4 * 3,
+				21 => 4 * 3,
+				22 => 4 * 3,
+				23 => 4 * 3,
+				24 => 4 * 1,
+				25 => 4 * 1,
+				26 => 4 * 1,
+				27 => 4 * 1,
+				28 => 4 * 1,
+				29 => 4 * 1,
+				30 => 4 * 1,
+				31 => 4 * 1,
+				32 => 4 * 1,
+				33 => 4 * 1,
+				34 => 4 * 1,
+				35 => 4 * 1,
+				36 => 4 * 1,
+				_  => unreachable!()
+			}
+		},
+		ExprKind::Data(size, vals) => *size as u64 * vals.len() as u64,
+		ExprKind::Label(n) => 0,
+		_ => unreachable!(),
 	}
 }

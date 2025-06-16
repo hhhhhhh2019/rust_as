@@ -10,7 +10,7 @@ use token::Token;
 
 use expr::{Expr, ExprKind};
 use parser::{reduce, Operation};
-use asm::{opcode, register, datatype};
+use asm::{opcode, register, datatype, get_size};
 
 
 fn token_value(tok: Token) -> ExprKind {
@@ -68,7 +68,7 @@ fn main() {
 	let mut val_stack: Vec<Expr> = vec![start.1];
 
 	loop {
-		dbg!(&stack);
+		// dbg!(&stack);
 		// dbg!(&val_stack);
 
 		match reduce(&stack, tokens.peek().unwrap_or(&(
@@ -105,6 +105,28 @@ fn main() {
 		}
 	}
 
-	dbg!(&stack);
+	// dbg!(&stack);
+	// dbg!(&val_stack);
+
+	for i in &mut val_stack {
+		i.size = get_size(i);
+	}
+
+	let mut offset = 0;
+
+	for i in &mut val_stack {
+		i.update_offset(offset);
+		offset += i.size;
+	}
+
 	dbg!(&val_stack);
+
+	let mut output: Vec<u8> = vec![];
+	let labels = val_stack.iter().cloned()
+		.filter(|e| matches!(e.kind, ExprKind::Label("")))
+		.collect();
+
+	for i in val_stack {
+		output.extend(i.to_bytes(&labels));
+	}
 }
