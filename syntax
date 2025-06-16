@@ -1,0 +1,35 @@
+Instr = IName E
+Instr = IName E , E
+Instr = IName E , E , E
+
+Data = DType Args
+Args = E , Args
+Args = E
+
+E = Reg
+E = E1
+
+E1 = E1 | E1
+E1 = E2
+
+E2 = E2 ^ E2
+E2 = E3
+
+E3 = E3 & E3
+E3 = E4
+
+E4 = E4 + E4
+E4 = E4 - E4
+E4 = E5
+
+E5 = E5 * E5
+E5 = E5 / E5
+E5 = E5 % E5
+E5 = E6
+
+E6 = ~ E6
+E6 = E7
+
+E7 = number
+E7 = id
+E7 = ( E1 )

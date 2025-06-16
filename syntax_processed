@@ -1,0 +1,30 @@
+1 Vals = E
+1 E1 = E2
+1 E2 = E3
+1 E3 = E4
+1 E4 = E5
+1 E5 = E6
+1 E6 = E7
+1 E7 = id
+1 E7 = number
+1 E = E1
+1 E = Reg
+
+2 Data = DType Vals
+2 E6 = ~ E6
+2 Instr = IName E
+
+3 Vals = Vals , E
+3 E1 = E1 | E1
+3 E2 = E2 ^ E2
+3 E3 = E3 & E3
+3 E4 = E4 + E4
+3 E4 = E4 - E4
+3 E5 = E5 % E5
+3 E5 = E5 * E5
+3 E5 = E5 / E5
+3 E7 = ( E1 )
+
+4 Instr = IName E , E
+
+6 Instr = IName E , E , E
