@@ -117,6 +117,7 @@ fn main() {
 	for i in &mut val_stack {
 		i.update_offset(offset);
 		offset += i.size;
+		offset = (offset + 3) / 4 * 4;
 	}
 
 	// dbg!(&val_stack);
@@ -131,7 +132,8 @@ fn main() {
 		for i in 0..(bytes.len() + 3) / 4 * 4 - bytes.len() {
 			bytes.push(0);
 		}
-		println!("{:?}", bytes);
 		output.extend(bytes);
 	}
+
+	std::fs::write("a.out", output);
 }
