@@ -84,7 +84,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			Operation::REDUCE(3, &|toks, vals| {
 				if let ExprKind::Vals(arr) = &vals[0].kind {
 					let mut arr = arr.clone();
-					arr.insert(0, vals[2].clone());
+					arr.push(vals[2].clone());
 					(Vals, Expr{
 						kind: ExprKind::Vals(arr),
 						span: vals[0].span.start..vals[2].span.end,
