@@ -119,14 +119,19 @@ fn main() {
 		offset += i.size;
 	}
 
-	dbg!(&val_stack);
+	// dbg!(&val_stack);
 
 	let mut output: Vec<u8> = vec![];
 	let labels = val_stack.iter().cloned()
-		.filter(|e| matches!(e.kind, ExprKind::Label("")))
+		.filter(|e| matches!(e.kind, ExprKind::Label(_)))
 		.collect();
 
 	for i in val_stack {
-		output.extend(i.to_bytes(&labels));
+		let mut bytes = i.to_bytes(&labels);
+		for i in 0..(bytes.len() + 3) / 4 * 4 - bytes.len() {
+			bytes.push(0);
+		}
+		println!("{:?}", bytes);
+		output.extend(bytes);
 	}
 }
