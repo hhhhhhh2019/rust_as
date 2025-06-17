@@ -150,8 +150,8 @@ fn main() {
 				val_stack.push(next.1);
 			},
 			Operation::REDUCE(n, action) => {
+				stack.drain(stack.len() - n..);
 				let (t, v) = action(
-					stack.drain(stack.len() - n..).collect(),
 					val_stack.drain(val_stack.len() - n..).collect(),
 				);
 				stack.push(t);
@@ -184,11 +184,12 @@ fn main() {
 
 	for i in val_stack {
 		let mut bytes = i.to_bytes(&labels);
-		for i in 0..(bytes.len() + 3) / 4 * 4 - bytes.len() {
+		for _ in 0..(bytes.len() + 3) / 4 * 4 - bytes.len() {
 			bytes.push(0);
 		}
 		output.extend(bytes);
 	}
 
-	std::fs::write(std::env::args().nth(2).expect("expected output filename"), output);
+
+	let _ = std::fs::write(std::env::args().nth(2).expect("expected output filename"), output);
 }

@@ -128,7 +128,7 @@ pub fn get_size(e: &Expr) -> u64 {
 			}
 		},
 		ExprKind::Data(size, vals) => *size as u64 * vals.len() as u64,
-		ExprKind::Label(n) => 0,
+		ExprKind::Label(_) => 0,
 		_ => unreachable!(),
 	}
 }

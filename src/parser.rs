@@ -7,7 +7,7 @@ use Token::*;
 pub enum Operation<'a> {
 	NOMATCH,
 	SHIFT(Vec<Token<'a>>),
-	REDUCE(usize, &'a dyn Fn(Vec<Token<'a>>, Vec<Expr<'a>>) -> (Token<'a>, Expr<'a>)),
+	REDUCE(usize, &'a dyn Fn(Vec<Expr<'a>>) -> (Token<'a>, Expr<'a>)),
 }
 
 pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a> {
@@ -21,7 +21,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		&lookahead
 	) {
 		(IName(_), E, COMMA, E, COMMA, E, _) => return
-			Operation::REDUCE(6, &|toks, vals| {
+			Operation::REDUCE(6, &|vals| {
 				if let ExprKind::IName(op, size) = vals[0].kind {
 					(Instr, Expr{
 						kind: ExprKind::Instruction(op, size, vec![
@@ -58,7 +58,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			Operation::SHIFT(vec![COMMA]),
 
 		(IName(_), E, COMMA, E, _) => return
-			Operation::REDUCE(4, &|toks, vals| {
+			Operation::REDUCE(4, &|vals| {
 				if let ExprKind::IName(op, size) = vals[0].kind {
 					(Instr, Expr{
 						kind: ExprKind::Instruction(op, size, vec![
@@ -81,7 +81,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			Operation::SHIFT(vec![Reg(""), LBR, Number(0), TILDA, Id("")]),
 
 		(Vals, COMMA, E, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				if let ExprKind::Vals(arr) = &vals[0].kind {
 					let mut arr = arr.clone();
 					arr.push(vals[2].clone());
@@ -97,7 +97,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			Operation::SHIFT(vec![LBR, Number(0), TILDA, Id("")]),
 
 		(E1, PIPE, E1, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E1, Expr{
 					kind: ExprKind::Or(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -106,7 +106,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E2, CARET, E2, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E2, Expr{
 					kind: ExprKind::Xor(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -115,7 +115,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E3, AMPERSAND, E3, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E3, Expr{
 					kind: ExprKind::And(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -124,7 +124,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E4, LSHIFT, E4, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E4, Expr{
 					kind: ExprKind::Lsh(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -133,7 +133,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E4, RSHIFT, E4, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E4, Expr{
 					kind: ExprKind::Rsh(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -142,7 +142,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E5, PLUS, E5, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E5, Expr{
 					kind: ExprKind::Sum(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -151,7 +151,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E5, MINUS, E5, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E5, Expr{
 					kind: ExprKind::Sub(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -160,7 +160,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E6, PERCENT, E6, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E6, Expr{
 					kind: ExprKind::Mod(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -169,7 +169,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E6, STAR, E6, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E6, Expr{
 					kind: ExprKind::Mul(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -178,7 +178,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E6, SLASH, E6, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E6, Expr{
 					kind: ExprKind::Div(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
@@ -187,7 +187,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(LBR, E1, RBR, _) => return
-			Operation::REDUCE(3, &|toks, vals| {
+			Operation::REDUCE(3, &|vals| {
 				(E8, Expr{
 					kind: vals[1].kind.clone(),
 					span: vals[0].span.start..vals[2].span.start,
@@ -225,7 +225,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			Operation::SHIFT(vec![COMMA]),
 
 		(DataType(_), Vals, _) => return
-			Operation::REDUCE(2, &|toks, vals| {
+			Operation::REDUCE(2, &|vals| {
 				if let (ExprKind::DType(size), ExprKind::Vals(arr)) =
 					(vals[0].kind.clone(), vals[1].kind.clone()) {
 					(Data, Expr{
@@ -237,7 +237,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(TILDA, E7, _) => return
-			Operation::REDUCE(2, &|toks, vals| {
+			Operation::REDUCE(2, &|vals| {
 				(E7, Expr{
 					kind: ExprKind::Not(Box::new(vals[1].clone())),
 					span: vals[0].span.start..vals[1].span.end,
@@ -246,7 +246,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(IName(_), E, _) => return
-			Operation::REDUCE(2, &|toks, vals| {
+			Operation::REDUCE(2, &|vals| {
 				if let ExprKind::IName(op, size) = vals[0].kind {
 					(Instr, Expr{
 						kind: ExprKind::Instruction(op, size, vec![
@@ -306,11 +306,8 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		(TILDA, _) => return
 			Operation::SHIFT(vec![LBR, Number(0), TILDA, Id("")]),
 
-		(IName(_), _) => return
-			Operation::SHIFT(vec![Reg(""), LBR, Number(0), TILDA, Id("")]),
-
 		(E, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(Vals, Expr{
 					kind: ExprKind::Vals(vec![vals[0].clone()]),
 					span: vals[0].span.clone(),
@@ -319,7 +316,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(Reg(_), _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -328,7 +325,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E1, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -337,7 +334,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E2, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E1, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -346,7 +343,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E3, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E2, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -355,7 +352,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E4, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E3, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -364,7 +361,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E5, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E4, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -373,7 +370,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E6, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E5, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -382,7 +379,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E7, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E6, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -391,7 +388,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(E8, _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E7, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -400,7 +397,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(Id(_), _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E7, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
@@ -409,7 +406,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 			}),
 
 		(Number(_), _) => return
-			Operation::REDUCE(1, &|toks, vals| {
+			Operation::REDUCE(1, &|vals| {
 				(E7, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
