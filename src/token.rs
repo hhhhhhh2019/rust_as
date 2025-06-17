@@ -4,6 +4,9 @@ use logos::Logos;
 #[derive(Logos, Debug, Clone, Eq, PartialEq)]
 #[logos(skip r"\s+")]
 pub enum Token<'a> {
+	#[regex(r"//.+", logos::skip)]
+	COMMENT,
+
 	#[token("+")]
 	PLUS,
 	#[token("-")]
@@ -28,6 +31,10 @@ pub enum Token<'a> {
 	RBR,
 	#[token(",")]
 	COMMA,
+	#[token("<<")]
+	LSHIFT,
+	#[token(">>")]
+	RSHIFT,
 
 	#[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>().unwrap())]
 	#[regex(r"0x[0-9a-fA-F]+", |lex| i64::from_str_radix(lex.slice(), 16).unwrap())]
@@ -61,5 +68,6 @@ pub enum Token<'a> {
 	E5,
 	E6,
 	E7,
+	E8,
 	Instr,
 }

@@ -123,45 +123,63 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 				})
 			}),
 
-		(E4, PLUS, E4, _) => return
+		(E4, LSHIFT, E4, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
 				(E4, Expr{
+					kind: ExprKind::Lsh(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
+					span: vals[0].span.start..vals[2].span.start,
+					..Default::default()
+				})
+			}),
+
+		(E4, RSHIFT, E4, _) => return
+			Operation::REDUCE(3, &|toks, vals| {
+				(E4, Expr{
+					kind: ExprKind::Rsh(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
+					span: vals[0].span.start..vals[2].span.start,
+					..Default::default()
+				})
+			}),
+
+		(E5, PLUS, E5, _) => return
+			Operation::REDUCE(3, &|toks, vals| {
+				(E5, Expr{
 					kind: ExprKind::Sum(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
 				})
 			}),
 
-		(E4, MINUS, E4, _) => return
+		(E5, MINUS, E5, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
-				(E4, Expr{
+				(E5, Expr{
 					kind: ExprKind::Sub(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
 				})
 			}),
 
-		(E5, PERCENT, E5, _) => return
+		(E6, PERCENT, E6, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
-				(E5, Expr{
+				(E6, Expr{
 					kind: ExprKind::Mod(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
 				})
 			}),
 
-		(E5, STAR, E5, _) => return
+		(E6, STAR, E6, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
-				(E5, Expr{
+				(E6, Expr{
 					kind: ExprKind::Mul(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
 				})
 			}),
 
-		(E5, SLASH, E5, _) => return
+		(E6, SLASH, E6, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
-				(E5, Expr{
+				(E6, Expr{
 					kind: ExprKind::Div(Box::new(vals[0].clone()), Box::new(vals[2].clone())),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
@@ -170,7 +188,7 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 
 		(LBR, E1, RBR, _) => return
 			Operation::REDUCE(3, &|toks, vals| {
-				(E7, Expr{
+				(E8, Expr{
 					kind: vals[1].kind.clone(),
 					span: vals[0].span.start..vals[2].span.start,
 					..Default::default()
@@ -191,16 +209,17 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		(E1, PIPE, _) |
 		(E2, CARET, _) |
 		(E3, AMPERSAND, _) |
-		(E4, PLUS, _) |
-		(E4, MINUS, _) |
-		(E5, PERCENT, _) |
-		(E5, STAR, _) |
-		(E5, SLASH, _) => return
+		(E4, LSHIFT, _) |
+		(E4, RSHIFT, _) |
+		(E5, PLUS, _) |
+		(E5, MINUS, _) |
+		(E6, PERCENT, _) |
+		(E6, STAR, _) |
+		(E6, SLASH, _) => return
 			Operation::SHIFT(vec![LBR, Number(0), TILDA, Id("")]),
 
-		// TODO: check will it work without this lines
-		// (LBR, E1, _) => return
-		// 	Operation::SHIFT(vec![RBR, PIPE, CARET, AMPERSAND, ]),
+		(LBR, E1, _) => return
+			Operation::SHIFT(vec![RBR, PIPE, CARET, AMPERSAND, LSHIFT, RSHIFT, PLUS, MINUS, PERCENT, STAR, SLASH]),
 
 		(DataType(_), Vals, COMMA) => return
 			Operation::SHIFT(vec![COMMA]),
@@ -217,9 +236,9 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 				} else {unreachable!()}
 			}),
 
-		(TILDA, E6, _) => return
+		(TILDA, E7, _) => return
 			Operation::REDUCE(2, &|toks, vals| {
-				(E6, Expr{
+				(E7, Expr{
 					kind: ExprKind::Not(Box::new(vals[1].clone())),
 					span: vals[0].span.start..vals[1].span.end,
 					..Default::default()
@@ -257,19 +276,25 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		(E3, AMPERSAND) => return
 			Operation::SHIFT(vec![AMPERSAND]),
 
-		(E4, PLUS) => return
+		(E4, LSHIFT) => return
+			Operation::SHIFT(vec![LSHIFT]),
+
+		(E4, RSHIFT) => return
+			Operation::SHIFT(vec![RSHIFT]),
+
+		(E5, PLUS) => return
 			Operation::SHIFT(vec![PLUS]),
 
-		(E4, MINUS) => return
+		(E5, MINUS) => return
 			Operation::SHIFT(vec![MINUS]),
 
-		(E5, PERCENT) => return
+		(E6, PERCENT) => return
 			Operation::SHIFT(vec![PERCENT]),
 
-		(E5, STAR) => return
+		(E6, STAR) => return
 			Operation::SHIFT(vec![STAR]),
 
-		(E5, SLASH) => return
+		(E6, SLASH) => return
 			Operation::SHIFT(vec![SLASH]),
 
 		(LBR, _) => return
@@ -359,6 +384,15 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		(E7, _) => return
 			Operation::REDUCE(1, &|toks, vals| {
 				(E6, Expr{
+					kind: vals[0].kind.clone(),
+					span: vals[0].span.clone(),
+					..Default::default()
+				})
+			}),
+
+		(E8, _) => return
+			Operation::REDUCE(1, &|toks, vals| {
+				(E7, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
 					..Default::default()

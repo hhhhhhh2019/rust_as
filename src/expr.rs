@@ -26,6 +26,8 @@ pub enum ExprKind<'a> {
 	Or(Box<Expr<'a>>, Box<Expr<'a>>),
 	Xor(Box<Expr<'a>>, Box<Expr<'a>>),
 	Not(Box<Expr<'a>>),
+	Lsh(Box<Expr<'a>>, Box<Expr<'a>>),
+	Rsh(Box<Expr<'a>>, Box<Expr<'a>>),
 }
 
 #[derive(Debug, Clone)]
@@ -112,7 +114,9 @@ impl Expr<'_> {
 			ExprKind::Mod(lhs, rhs) |
 			ExprKind::And(lhs, rhs) |
 			ExprKind::Or(lhs, rhs) |
-			ExprKind::Xor(lhs, rhs) => {
+			ExprKind::Xor(lhs, rhs) |
+			ExprKind::Lsh(lhs, rhs) |
+			ExprKind::Rsh(lhs, rhs) => {
 				lhs.update_offset(offset);
 				rhs.update_offset(offset);
 			},
@@ -153,6 +157,8 @@ impl Expr<'_> {
 			ExprKind::Or(lhs, rhs) => lhs.eval(labels) | rhs.eval(labels),
 			ExprKind::Xor(lhs, rhs) => lhs.eval(labels) ^ rhs.eval(labels),
 			ExprKind::Not(c) => !c.eval(labels),
+			ExprKind::Lsh(lhs, rhs) => lhs.eval(labels) << rhs.eval(labels),
+			ExprKind::Rsh(lhs, rhs) => lhs.eval(labels) >> rhs.eval(labels),
 			_ => unreachable!()
 		}
 	}
