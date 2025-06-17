@@ -1,9 +1,10 @@
-#![allow(dead_code, unused)]
+#![cfg_attr(debug_assertions, allow(dead_code, unused))]
 
 mod token;
 mod expr;
 mod parser;
 mod asm;
+mod minipre;
 
 use logos::Logos;
 use token::Token;
@@ -11,6 +12,9 @@ use token::Token;
 use expr::{Expr, ExprKind};
 use parser::{reduce, Operation};
 use asm::{opcode, register, datatype, get_size};
+
+use minipre::{process_str, Context};
+use regex::Regex;
 
 
 fn token_value(tok: Token) -> ExprKind {
@@ -41,10 +45,60 @@ fn token_value(tok: Token) -> ExprKind {
 }
 
 
+fn read_file(filename: String) -> String {
+	let file = std::fs::read_to_string(filename).expect("file {filename} not found");
+
+	let regex = Regex::new("#include \".+\"").unwrap();
+	let name_regex = Regex::new("\".+\"").unwrap();
+
+	let Some(captures) = regex.captures(&file) else {
+		return file;
+	};
+
+	let mut replaces: Vec<(usize, usize)> = vec![];
+
+	let mut file = file.clone();
+
+	for c in captures.iter() {
+		let Some(c) = c else {
+			unreachable!()
+		};
+
+		let mut start = c.start();
+		let len = c.end() - c.start() + 1;
+
+		for i in replaces.iter() {
+			if i.0 < start {unreachable!()}
+
+			start += i.1;
+		}
+
+		// TODO: fix file paths
+		let include_filename = name_regex.captures(c.as_str()).unwrap().get(0).map_or("", |m| m.as_str().strip_prefix("\"").unwrap().strip_suffix("\"").unwrap());
+
+		let included = read_file(include_filename.to_string());
+
+		replaces.push((start, included.len() - len));
+
+		file.drain(start..start+len);
+		file.insert_str(start, &included);
+	}
+
+	file
+}
+
+
 fn main() {
-	let inp = std::fs::read_to_string(
-		std::env::args().nth(1).expect("expected input filename")
+	let mut ctx = Context::new();
+
+	let inp = read_file(std::env::args().nth(1).expect("expected input filename"));
+
+	let inp = process_str(
+		inp.as_str(),
+		&mut ctx
 	).unwrap();
+
+	dbg!(&inp);
 
 	let mut tokens = Token::lexer(&inp)
 		.spanned()
@@ -58,8 +112,7 @@ fn main() {
 				Err(_) => unimplemented!()
 			}
 		})
-		.peekable()
-		;
+		.peekable();
 
 	let start = tokens.next().unwrap_or((
 		Token::EOI,
