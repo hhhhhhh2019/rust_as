@@ -42,7 +42,9 @@ fn token_value(tok: Token) -> ExprKind {
 
 
 fn main() {
-	let inp = std::fs::read_to_string("input.S").unwrap();
+	let inp = std::fs::read_to_string(
+		std::env::args().nth(1).expect("expected input filename")
+	).unwrap();
 
 	let mut tokens = Token::lexer(&inp)
 		.spanned()
@@ -135,5 +137,5 @@ fn main() {
 		output.extend(bytes);
 	}
 
-	std::fs::write("a.out", output);
+	std::fs::write(std::env::args().nth(2).expect("expected output filename"), output);
 }
