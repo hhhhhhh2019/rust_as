@@ -46,41 +46,27 @@ fn token_value(tok: Token) -> ExprKind {
 
 
 fn read_file(filename: String) -> String {
-	let file = std::fs::read_to_string(filename).expect("file {filename} not found");
+	let mut file = std::fs::read_to_string(filename).expect("file {filename} not found");
 
 	let regex = Regex::new("#include \".+\"").unwrap();
 	let name_regex = Regex::new("\".+\"").unwrap();
 
-	let Some(captures) = regex.captures(&file) else {
-		return file;
-	};
-
-	let mut replaces: Vec<(usize, usize)> = vec![];
-
-	let mut file = file.clone();
-
-	for c in captures.iter() {
-		let Some(c) = c else {
-			unreachable!()
-		};
-
-		let mut start = c.start();
-		let len = c.end() - c.start() + 1;
-
-		for i in replaces.iter() {
-			if i.0 < start {unreachable!()}
-
-			start += i.1;
-		}
+	while let Some(c) = regex.captures(&file) {
+		let c = c.get(0).unwrap();
 
 		// TODO: fix file paths
-		let include_filename = name_regex.captures(c.as_str()).unwrap().get(0).map_or("", |m| m.as_str().strip_prefix("\"").unwrap().strip_suffix("\"").unwrap());
+		let include_filename = name_regex
+			.captures(c.as_str())
+			.unwrap()
+			.get(0)
+			.map_or("", |m| m.as_str().strip_prefix("\"").unwrap().strip_suffix("\"").unwrap());
 
 		let included = read_file(include_filename.to_string());
 
-		replaces.push((start, included.len() - len));
+		let start = c.start();
+		let end = c.end();
 
-		file.drain(start..start+len);
+		file.drain(start..end);
 		file.insert_str(start, &included);
 	}
 

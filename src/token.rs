@@ -37,8 +37,8 @@ pub enum Token<'a> {
 	RSHIFT,
 
 	#[regex(r"[0-9]+", |lex| lex.slice().parse::<i64>().unwrap())]
-	#[regex(r"0x[0-9a-fA-F]+", |lex| i64::from_str_radix(lex.slice(), 16).unwrap())]
-	#[regex(r"0b[0-1]+", |lex| i64::from_str_radix(lex.slice(), 2).unwrap())]
+	#[regex(r"0x[0-9a-fA-F]+", |lex| i64::from_str_radix(lex.slice().strip_prefix("0x").unwrap(), 16).unwrap())]
+	#[regex(r"0b[0-1]+", |lex| i64::from_str_radix(lex.slice().strip_prefix("0b").unwrap(), 2).unwrap())]
 	Number(i64),
 
 	#[regex(r"(r[0-9]|r0[1-5]|sp|pc)")]
