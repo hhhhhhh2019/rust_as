@@ -16,6 +16,8 @@ use asm::{opcode, register, datatype, get_size};
 use minipre::{process_str, Context};
 use regex::Regex;
 
+use std::path::Path;
+
 
 fn token_value(tok: Token) -> ExprKind {
 	match tok {
@@ -45,8 +47,8 @@ fn token_value(tok: Token) -> ExprKind {
 }
 
 
-fn read_file(filename: String) -> String {
-	let mut file = std::fs::read_to_string(filename).expect("file {filename} not found");
+fn read_file(path: &Path) -> String {
+	let mut file = std::fs::read_to_string(path).expect(format!("file {} not found", path.to_str().unwrap()).as_str());
 
 	let regex = Regex::new("#include \".+\"").unwrap();
 	let name_regex = Regex::new("\".+\"").unwrap();
@@ -61,7 +63,9 @@ fn read_file(filename: String) -> String {
 			.get(0)
 			.map_or("", |m| m.as_str().strip_prefix("\"").unwrap().strip_suffix("\"").unwrap());
 
-		let included = read_file(include_filename.to_string());
+		let included_path = path.parent().unwrap_or(Path::new("/")).join(include_filename.to_string());
+
+		let included = read_file(&included_path);
 
 		let start = c.start();
 		let end = c.end();
@@ -77,7 +81,7 @@ fn read_file(filename: String) -> String {
 fn main() {
 	let mut ctx = Context::new();
 
-	let inp = read_file(std::env::args().nth(1).expect("expected input filename"));
+	let inp = read_file(&Path::new(&std::env::args().nth(1).expect("expected input filename")));
 
 	let inp = process_str(
 		inp.as_str(),
