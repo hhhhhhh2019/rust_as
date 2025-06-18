@@ -24,17 +24,17 @@ fn token_value(tok: Token) -> ExprKind {
 		Token::Label(n) => ExprKind::Label(n),
 		Token::Id(n) => ExprKind::Id(n),
 		Token::IName(n) => {
-			if n.ends_with("b") {
-				ExprKind::IName(opcode(n.strip_suffix("b").unwrap()), 0)
+			if n.ends_with("B") {
+				ExprKind::IName(opcode(n.strip_suffix("B").unwrap()), 0)
 			}
-			else if n.ends_with("s") {
-				ExprKind::IName(opcode(n.strip_suffix("s").unwrap()), 1)
+			else if n.ends_with("S")  {
+				ExprKind::IName(opcode(n.strip_suffix("S").unwrap()), 1)
 			}
-			else if n.ends_with("i") {
-				ExprKind::IName(opcode(n.strip_suffix("i").unwrap()), 2)
+			else if n.ends_with("I") {
+				ExprKind::IName(opcode(n.strip_suffix("I").unwrap()), 2)
 			}
-			else if n.ends_with("l") {
-				ExprKind::IName(opcode(n.strip_suffix("l").unwrap()), 3)
+			else if n.ends_with("L") {
+				ExprKind::IName(opcode(n.strip_suffix("L").unwrap()), 3)
 			} else {
 				ExprKind::IName(opcode(n), 3)
 			}

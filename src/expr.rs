@@ -192,7 +192,7 @@ impl Expr<'_> {
 					*op,
 					r1 | (r2 << 4),
 					r3 | (num8 & 0x0f << 4),
-					(num8 & 0xf0 >> 4) | size,
+					(num8 & 0xf0 >> 4) | (size << 4),
 				];
 
 				if put_num64 {
