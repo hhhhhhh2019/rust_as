@@ -41,7 +41,7 @@ pub enum Token<'a> {
 	#[regex(r"0b[0-1]+", |lex| i64::from_str_radix(lex.slice().strip_prefix("0b").unwrap(), 2).unwrap())]
 	Number(i64),
 
-	#[regex(r"(r[0-9]|r0[1-5]|sp|pc)")]
+	#[regex(r"(r[0-9]|r1[0-5]|sp|pc)")]
 	Reg(&'a str),
 
 	#[regex(r"(sto|loa|add|sub|mul|idiv|addn|subn|muln|divn|addz|addc|adds|notr|andr|orr|xorr|shl|shr|andn|orn|xorn|shln|shrn|push|pop|call|iint|iret|chst|lost|chtp|lotp|chflag|loflag|utok|ktou)[BSIL]?")]

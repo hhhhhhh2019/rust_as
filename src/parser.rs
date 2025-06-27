@@ -420,12 +420,13 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 
 		(IName(_), _) => return
 			Operation::REDUCE(1, &|vals| {
-				(Instr, Expr{
-					kind: vals[0].kind.clone(),
-					span: vals[0].span.clone(),
-					..Default::default()
-				})
-			}),
+				if let ExprKind::IName(op, size) = vals[0].kind {
+					(Instr, Expr{
+						kind: ExprKind::Instruction(op, size, vec![]),
+						span: vals[0].span.clone(),
+						..Default::default()
+					})
+				} else {unreachable!()}}),
 
 		_ => {}
 	}}
