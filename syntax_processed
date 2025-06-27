@@ -10,6 +10,7 @@
 1 E8 = number
 1 E = E1
 1 E = Reg
+1 Instr = Iname
 
 2 Data = DType Args
 2 E7 = ~ E7

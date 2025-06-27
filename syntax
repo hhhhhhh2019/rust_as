@@ -1,3 +1,4 @@
+Instr = IName
 Instr = IName E
 Instr = IName E , E
 Instr = IName E , E , E

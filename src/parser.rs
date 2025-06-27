@@ -264,7 +264,11 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		&stack[stack.len() - 1],
 		&lookahead
 	) {
-		(IName(_), _) => return
+		(IName(_), Reg(_)) |
+		(IName(_), LBR) |
+		(IName(_), Number(_)) |
+		(IName(_), TILDA) |
+		(IName(_), Id(_)) => return
 			Operation::SHIFT(vec![Reg(""), LBR, Number(0), TILDA, Id("")]),
 
 		(E1, PIPE) => return
@@ -408,6 +412,15 @@ pub fn reduce<'a>(stack: &Vec<Token<'a>>, lookahead: Token<'a>) -> Operation<'a>
 		(Number(_), _) => return
 			Operation::REDUCE(1, &|vals| {
 				(E7, Expr{
+					kind: vals[0].kind.clone(),
+					span: vals[0].span.clone(),
+					..Default::default()
+				})
+			}),
+
+		(IName(_), _) => return
+			Operation::REDUCE(1, &|vals| {
+				(Instr, Expr{
 					kind: vals[0].kind.clone(),
 					span: vals[0].span.clone(),
 					..Default::default()
