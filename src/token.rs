@@ -44,7 +44,7 @@ pub enum Token<'a> {
 	#[regex(r"(r[0-9]|r1[0-5]|sp|pc)")]
 	Reg(&'a str),
 
-	#[regex(r"(sto|loa|add|sub|mul|idiv|addn|subn|muln|divn|addz|addc|adds|notr|andr|orr|xorr|shl|shr|andn|orn|xorn|shln|shrn|push|pop|call|iint|iret|chst|lost|chtp|lotp|chflag|loflag|utok|ktou)[BSIL]?")]
+	#[regex(r"(sto|loa|add|sub|mul|idiv|addn|subn|muln|divn|addz|addc|adds|notr|andr|orr|xorr|shl|shr|andn|orn|xorn|shln|shrn|push|pop|call|iint|iret|chst|lost|chtp|lotp|chflag|loflag|utok|ktou|setsyscall|syscall)[BSIL]?")]
 	IName(&'a str),
 
 	#[regex(r"(db|ds|di|dl)")]

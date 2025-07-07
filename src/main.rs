@@ -56,7 +56,6 @@ fn read_file(path: &Path) -> String {
 	while let Some(c) = regex.captures(&file) {
 		let c = c.get(0).unwrap();
 
-		// TODO: fix file paths
 		let include_filename = name_regex
 			.captures(c.as_str())
 			.unwrap()

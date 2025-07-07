@@ -51,7 +51,7 @@ enum InstrArgs {
 use InstrArgs::*;
 
 
-const INSTRS: [[InstrArgs; 3]; 37] = [
+const INSTRS: [[InstrArgs; 3]; 39] = [
 	[R3,    R2,   Num64], // sto
 	[R1,    R2,   Num64], // loa
 	[R1,    R2,   R3],    // add
@@ -89,6 +89,8 @@ const INSTRS: [[InstrArgs; 3]; 37] = [
 	[R1,    None, None],  // loflag
 	[R1,    R3,   None],  // utok
 	[R1,    R3,   None],  // ktou
+	[R2,    None, None],  // setsyscall
+	[None,  None, None],  // syscall
 ];
 
 
